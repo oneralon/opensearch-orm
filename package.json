@@ -1,5 +1,5 @@
 {
-  "name": "opensearch-orm",
+  "name": "@oneralon/opensearch-orm",
   "version": "1.0.0",
   "description": "OpenSearch object relational mapper.",
   "scripts": {

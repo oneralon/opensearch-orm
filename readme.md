@@ -10,7 +10,7 @@ It's a fork of https://github.com/Twiddlle/elasticsearch-orm with replacing Elas
 Install [package](https://www.npmjs.com/package/opensearch-orm) from npm.
 
 ```bash
-npm i opensearch-orm @opensearch-project/opensearch
+npm i @oneralon/opensearch-orm @opensearch-project/opensearch
 ```
 
 ## Usage
