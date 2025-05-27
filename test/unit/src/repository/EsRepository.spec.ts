@@ -1,6 +1,6 @@
 import { TestingClass } from '../../../fixtures/TestingClass';
 import { EsRepository } from '../../../../src/repository/EsRepository';
-import { Client } from '@elastic/elasticsearch';
+import { Client } from '@opensearch-project/opensearch';
 
 describe('Es Repository', () => {
   let repository: EsRepository<TestingClass>;
@@ -14,21 +14,27 @@ describe('Es Repository', () => {
   });
 
   it('create valid entity', async () => {
-    jest.spyOn(client, 'create').mockImplementationOnce((): any => {
+    jest.spyOn(client, 'create').mockImplementationOnce(() => {
       return {
         abort: () => undefined,
-        result: 'created',
+        body: {
+          result: 'created',
+        },
       };
     });
 
-    jest.spyOn(client, 'get').mockImplementationOnce((): any => {
+    jest.spyOn(client, 'get').mockImplementationOnce(() => {
       return {
         abort: () => undefined,
-        _id: '0eL8kTNJNs35P09tBGB3X',
-        _source: {
-          foo: 123,
-          bar: true,
-          geoPoint: [17, 18],
+        body: {
+          _index: '',
+          found: true,
+          _id: '0eL8kTNJNs35P09tBGB3X',
+          _source: {
+            foo: 123,
+            bar: true,
+            geoPoint: [17, 18],
+          },
         },
       };
     });

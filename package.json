@@ -1,7 +1,7 @@
 {
-  "name": "elastic-orm",
-  "version": "0.0.0",
-  "description": "Elasticsearch object relational mapper.",
+  "name": "opensearch-orm",
+  "version": "1.0.0",
+  "description": "OpenSearch object relational mapper.",
   "scripts": {
     "build": "tsc --project ./tsconfig.json",
     "test": "jest --forceExit --detectOpenHandles \"\\.spec\\.ts\"",
@@ -12,11 +12,11 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Twiddlle/elasticsearch-orm.git"
+    "url": "git+https://github.com/oneralon/opensearch-orm.git"
   },
   "keywords": [
     "elastic",
-    "elasticsearch",
+    "opensearch",
     "orm",
     "decorators",
     "entity",
@@ -27,11 +27,11 @@
   "author": "Twiddle",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Twiddlle/elasticsearch-orm/issues"
+    "url": "https://github.com/oneralon/opensearch-orm/issues"
   },
-  "homepage": "https://github.com/Twiddlle/elasticsearch-orm#readme",
+  "homepage": "https://github.com/oneralon/opensearch-orm#readme",
   "devDependencies": {
-    "@elastic/elasticsearch": "^8.7.0",
+    "@opensearch-project/opensearch": "^3.5.1",
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^27.4.1",
     "@types/lorem-ipsum": "^2.0.0",
@@ -54,14 +54,16 @@
     "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
-    "@elastic/elasticsearch": "^7.0.0 || ^8.0.0"
+    "@opensearch-project/opensearch": "^3.5.1"
   },
   "jest": {
     "moduleFileExtensions": [
       "js",
       "ts"
     ],
-    "setupFiles": ["<rootDir>/test/setup.ts"],
+    "setupFiles": [
+      "<rootDir>/test/setup.ts"
+    ],
     "rootDir": ".",
     "testEnvironment": "node",
     "testRegex": "\\.(integration|spec|performance)\\.ts$",

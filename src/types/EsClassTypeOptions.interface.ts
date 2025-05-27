@@ -1,6 +1,7 @@
+import { DynamicMapping } from '@opensearch-project/opensearch/api/_types/_common.mapping';
 import { EsQuery } from '../query/query';
 
-export type DynamicMappingTypes = 'true' | 'runtime' | 'false' | 'strict';
+export type DynamicMappingTypes = DynamicMapping;
 
 export interface EsClassTypeOptionsInterface {
   aliases?: string[];

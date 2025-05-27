@@ -4,7 +4,7 @@ import {
   EsMiddlewareFunction,
   EsActionTypes,
 } from './EsRepository.interface';
-import { Client } from '@elastic/elasticsearch';
+import { Client } from '@opensearch-project/opensearch';
 import { ClassType } from '../types/Class.type';
 import { FactoryProvider } from '../factory/Factory.provider';
 import { EsIndexInterface } from '../types/EsIndex.interface';
@@ -20,11 +20,12 @@ import {
   EsDeleteBulkResponseInterface,
   EsResponseInterface,
 } from './EsBulkResponseInterface';
-import { TransportRequestOptions } from '@elastic/transport';
+import { TransportRequestOptions } from '@opensearch-project/opensearch/lib/Transport';
 import {
-  DeleteByQueryRequest,
-  SearchRequest,
-} from '@elastic/elasticsearch/lib/api/types';
+  DeleteByQuery_Request,
+  Search_Request,
+} from '@opensearch-project/opensearch/api';
+import { BulkByScrollResponseBase } from '@opensearch-project/opensearch/api/_types/_common';
 
 export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
   private readonly metaLoader = FactoryProvider.makeMetaLoader();
@@ -47,8 +48,8 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
   private triggerBeforeRequest(
     actionType: EsActionTypes,
-    esParams: any,
-    args: any[],
+    esParams: unknown | void,
+    args: Array<unknown>,
   ) {
     for (const fn of this.registeredMiddlewares.beforeRequest) {
       esParams = fn(actionType, esParams, args);
@@ -143,7 +144,7 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
       return {
         raw: bulkRes,
-        hasErrors: !!bulkRes.errors,
+        hasErrors: !!bulkRes.body.errors,
       };
     } catch (e) {
       handleEsException(e);
@@ -152,15 +153,18 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
   async deleteByQuery(query: EsQuery<Entity>) {
     try {
-      const esParams: DeleteByQueryRequest = Object.assign({
-        index: this.metaLoader.getIndex(this.Entity, query as any),
+      const esParams: DeleteByQuery_Request = Object.assign({
+        index: this.metaLoader.getIndex(this.Entity, query),
         body: query,
       });
 
       this.triggerBeforeRequest('deleteByQuery', esParams, [query]);
       const res = await this.client.deleteByQuery(esParams);
 
-      return { deleted: res?.deleted, raw: res };
+      return {
+        deleted: (res?.body as BulkByScrollResponseBase).deleted,
+        raw: res,
+      };
     } catch (e) {
       handleEsException(e);
     }
@@ -168,21 +172,21 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
   async find(
     query: EsQuery<Entity>,
-    params: Partial<SearchRequest> = {},
+    params: Partial<Search_Request> = {},
   ): Promise<EsCollectionResponseInterface<Entity>> {
     try {
-      const esParams: SearchRequest = Object.assign(
+      const esParams: Search_Request = Object.assign(
         {
-          index: this.metaLoader.getIndex(this.Entity, query as any),
+          index: this.metaLoader.getIndex(this.Entity, query),
           body: query,
         },
         params,
       );
 
       this.triggerBeforeRequest('find', esParams, [query]);
-      const res = await this.client.search<any>(esParams);
+      const res = await this.client.search(esParams);
 
-      const hits = res?.hits?.hits || [];
+      const hits = res?.body.hits?.hits || [];
 
       return {
         raw: res,
@@ -212,13 +216,13 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
       );
 
       this.triggerBeforeRequest('findById', esParams, [id]);
-      const esRes = await this.client.get<any>(esParams);
+      const esRes = await this.client.get(esParams);
 
       return {
         raw: esRes,
         entity: this.entityTransformer.denormalize(this.Entity, {
-          id: esRes._id,
-          data: esRes._source,
+          id: esRes.body._id,
+          data: esRes.body._source,
         }),
       };
     } catch (e) {
@@ -321,13 +325,11 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
     params: Partial<TransportRequestOptions> = {},
   ): Promise<void> {
     try {
-      const esParams = Object.assign(
-        {
-          index: this.metaLoader.getIndex(this.Entity),
-          body: indexInterface,
-        },
-        params,
-      );
+      const esParams = {
+        index: this.metaLoader.getIndex(this.Entity),
+        body: indexInterface,
+        ...params,
+      };
 
       this.triggerBeforeRequest('createIndex', esParams, [indexInterface]);
 
@@ -448,7 +450,7 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
       return {
         entities: (await this.find(query)).entities,
         raw: bulkRes,
-        hasErrors: !!bulkRes.errors,
+        hasErrors: !!bulkRes.body.errors,
       };
     } catch (e) {
       handleEsException(e);

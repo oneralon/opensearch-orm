@@ -1,13 +1,13 @@
 import { config } from 'dotenv';
 import * as path from 'path';
 import { EsRepository } from '../../src/repository/EsRepository';
-import { Client } from '@elastic/elasticsearch';
 import { FactoryProvider } from '../../src/factory/Factory.provider';
 import {
   TestingAuthorClass,
   TestingImageClass,
   TestingNestedClass,
 } from '../fixtures/TestingNestedClass';
+import { Client } from '@opensearch-project/opensearch';
 
 config({ path: path.join(__dirname, '..', '.env') });
 
@@ -18,10 +18,10 @@ describe('RepositoryNested', () => {
     repository = new EsRepository(
       TestingNestedClass,
       new Client({
-        nodes: [process.env.ELASTIC_HOST],
+        nodes: [process.env.ELASTIC_HOST!],
         auth: {
-          username: process.env.ELASTIC_USERNAME,
-          password: process.env.ELASTIC_PASSWORD,
+          username: process.env.ELASTIC_USERNAME!,
+          password: process.env.ELASTIC_PASSWORD!,
         },
       }),
     );
@@ -33,7 +33,9 @@ describe('RepositoryNested', () => {
         );
       await repository.createIndex(schema);
       const mapping = FactoryProvider.makeSchemaManager().buildMapping(
-        FactoryProvider.makeMetaLoader().getReflectMetaData(TestingNestedClass),
+        FactoryProvider.makeMetaLoader().getReflectMetaData(
+          TestingNestedClass,
+        )!,
       );
       await repository.updateMapping(mapping);
     } catch (e) {

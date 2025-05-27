@@ -1,12 +1,12 @@
 import { config } from 'dotenv';
 import * as path from 'path';
 import { EsRepository } from '../../src/repository/EsRepository';
-import { Client } from '@elastic/elasticsearch';
 import { FactoryProvider } from '../../src/factory/Factory.provider';
 import { TestingClassWithIndexFn } from '../fixtures/TestingClassWithIndexFn';
 import { EsException } from '../../src/exceptions/EsException';
 import { EsEntityNotFoundException } from '../../src/exceptions/EsEntityNotFoundException';
-import { ResponseError } from '@elastic/transport/lib/errors';
+import { Client } from '@opensearch-project/opensearch';
+import { ResponseError } from '@opensearch-project/opensearch/lib/errors.js';
 
 config({ path: path.join(__dirname, '..', '.env') });
 
@@ -18,10 +18,10 @@ describe('RepositoryAliases', () => {
     repository = new EsRepository(
       TestingClassWithIndexFn,
       new Client({
-        nodes: [process.env.ELASTIC_HOST],
+        nodes: [process.env.ELASTIC_HOST!],
         auth: {
-          username: process.env.ELASTIC_USERNAME,
-          password: process.env.ELASTIC_PASSWORD,
+          username: process.env.ELASTIC_USERNAME!,
+          password: process.env.ELASTIC_PASSWORD!,
         },
       }),
     );
@@ -153,7 +153,7 @@ describe('RepositoryAliases', () => {
         foo: 3,
       },
     );
-    delete entityToUpdate.bar;
+    (entityToUpdate.bar as any) = undefined;
     const entity = await repository.index(entityToUpdate);
     expect(entity.entity.id).toHaveLength(21);
     expect(entity.entity.foo).toBe(3);
@@ -165,7 +165,7 @@ describe('RepositoryAliases', () => {
     const res = await repository.delete(createdEntity);
     expect(res).toBeTruthy();
 
-    let error: EsException;
+    let error: EsException | undefined = undefined;
     try {
       await repository.findById(createdEntity.id);
     } catch (e) {
@@ -173,7 +173,7 @@ describe('RepositoryAliases', () => {
     }
 
     expect(error).toBeInstanceOf(EsException);
-    expect((error.originalError as ResponseError).meta.statusCode).toBe(404);
+    expect((error?.originalError as ResponseError).meta.statusCode).toBe(404);
   });
 
   it('should create multiple entities', async () => {
@@ -185,7 +185,7 @@ describe('RepositoryAliases', () => {
     const createdEntities = await repository.createMultiple(entities);
     expect(createdEntities.entities).toHaveLength(3);
     expect(createdEntities.hasErrors).toBeFalsy();
-    expect(createdEntities.raw.items).toHaveLength(3);
+    expect(createdEntities.raw.body.items).toHaveLength(3);
     expect(createdEntities.entities[0].id).toHaveLength(21);
     expect(createdEntities.entities[0].foo).toBe(555);
     expect(createdEntities.entities[1].id).toHaveLength(21);
@@ -229,7 +229,7 @@ describe('RepositoryAliases', () => {
     ]);
     expect(updatedEntities.entities).toHaveLength(2);
     expect(updatedEntities.hasErrors).toBeFalsy();
-    expect(updatedEntities.raw.items).toHaveLength(2);
+    expect(updatedEntities.raw.body.items).toHaveLength(2);
     expect(updatedEntities.entities[0].id).toHaveLength(21);
     expect(updatedEntities.entities[0].foo).toBe(111);
     expect(updatedEntities.entities[1].id).toHaveLength(21);
@@ -253,7 +253,7 @@ describe('RepositoryAliases', () => {
     ]);
     expect(savedEntities.entities).toHaveLength(2);
     expect(savedEntities.hasErrors).toBeFalsy();
-    expect(savedEntities.raw.items).toHaveLength(2);
+    expect(savedEntities.raw.body.items).toHaveLength(2);
     expect(savedEntities.entities[0].id).toHaveLength(21);
     expect(savedEntities.entities[0].foo).toBeUndefined();
     expect(savedEntities.entities[1].id).toHaveLength(21);
@@ -268,7 +268,7 @@ describe('RepositoryAliases', () => {
     const createdEntities = await repository.createMultiple(entities);
     const ids = createdEntities.entities.map((entity) => entity.id);
     const deletedRes = await repository.deleteMultiple(ids);
-    expect(deletedRes.raw.items).toHaveLength(2);
+    expect(deletedRes.raw.body.items).toHaveLength(2);
     expect(deletedRes.hasErrors).toBeFalsy();
 
     const verifyDeletion = await repository.find({

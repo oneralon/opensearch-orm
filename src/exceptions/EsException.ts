@@ -1,12 +1,12 @@
-import {ErrorCause} from "@elastic/elasticsearch/lib/api/types";
+import { ErrorCause } from '@opensearch-project/opensearch/api/_types/_common';
 
-export class EsException extends Error implements ErrorCause{
+export class EsException extends Error implements ErrorCause {
   public constructor(message?: string, public originalError?: Error) {
     super(message);
 
     // `originalError` is conventional in ES6 / ES2015 which we target
     // `cause` is standard in Node 16.9+ / ES2021+
-    Object.defineProperty(this, "cause", {
+    Object.defineProperty(this, 'cause', {
       get: () => this.originalError,
       set: (newVal: unknown) => {
         this.originalError = newVal as Error;

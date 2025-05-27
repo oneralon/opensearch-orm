@@ -1,13 +1,13 @@
 import { config } from 'dotenv';
 import * as path from 'path';
 import { EsRepository } from '../../src/repository/EsRepository';
-import { Client } from '@elastic/elasticsearch';
 import { FactoryProvider } from '../../src/factory/Factory.provider';
 import { TestingClass } from '../fixtures/TestingClass';
 import { EsException } from '../../src/exceptions/EsException';
 import { EsEntityNotFoundException } from '../../src/exceptions/EsEntityNotFoundException';
 import * as bodybuilder from 'bodybuilder';
-import { ElasticsearchClientError } from '@elastic/transport/lib/errors';
+import { Client } from '@opensearch-project/opensearch';
+import { OpenSearchClientError } from '@opensearch-project/opensearch/lib/errors.js';
 
 config({ path: path.join(__dirname, '..', '.env') });
 
@@ -19,10 +19,10 @@ describe('Repository.integration', () => {
     repository = new EsRepository(
       TestingClass,
       new Client({
-        nodes: [process.env.ELASTIC_HOST],
+        nodes: [process.env.ELASTIC_HOST!],
         auth: {
-          username: process.env.ELASTIC_USERNAME,
-          password: process.env.ELASTIC_PASSWORD,
+          username: process.env.ELASTIC_USERNAME!,
+          password: process.env.ELASTIC_PASSWORD!,
         },
       }),
     );
@@ -97,7 +97,7 @@ describe('Repository.integration', () => {
       },
     });
 
-    expect(foundEntity.raw.hits.hits[0]._explanation).toBeDefined();
+    expect(foundEntity.raw.body.hits.hits[0]._explanation).toBeDefined();
     expect(foundEntity.entities[0].id).toHaveLength(21);
     expect(foundEntity.entities[0].foo).toBe(1);
     expect(foundEntity.entities[0].bar).toBe(true);
@@ -193,7 +193,7 @@ describe('Repository.integration', () => {
     const entityToUpdate = Object.assign(new TestingClass(), createdEntity, {
       foo: 3,
     });
-    delete entityToUpdate.bar;
+    (entityToUpdate as any).bar = undefined;
     const entity = await repository.index(entityToUpdate);
     expect(entity.entity.id).toHaveLength(21);
     expect(entity.entity.foo).toBe(3);
@@ -205,7 +205,7 @@ describe('Repository.integration', () => {
     const res = await repository.delete(createdEntity);
     expect(res).toBeTruthy();
 
-    let error: EsException;
+    let error: EsException | undefined = undefined;
     try {
       await repository.findById(createdEntity.id);
     } catch (e) {
@@ -235,7 +235,7 @@ describe('Repository.integration', () => {
       },
     });
     expect(res.deleted).toBe(1);
-    expect(res.raw.deleted).toBe(1);
+    expect((res.raw.body as any).deleted).toBe(1);
   });
 
   it('should create multiple entities', async () => {
@@ -247,7 +247,7 @@ describe('Repository.integration', () => {
     const createdEntities = await repository.createMultiple(entities);
     expect(createdEntities.entities).toHaveLength(3);
     expect(createdEntities.hasErrors).toBeFalsy();
-    expect(createdEntities.raw.items).toHaveLength(3);
+    expect(createdEntities.raw.body.items).toHaveLength(3);
     expect(createdEntities.entities[0].id).toHaveLength(21);
     expect(createdEntities.entities[0].foo).toBe(555);
     expect(createdEntities.entities[1].id).toHaveLength(21);
@@ -264,7 +264,7 @@ describe('Repository.integration', () => {
       error = e;
     }
     expect(error).toBeInstanceOf(EsException);
-    expect((error.originalError as ElasticsearchClientError).message).toContain(
+    expect((error.originalError as OpenSearchClientError).message).toContain(
       'request body is required',
     );
   });
@@ -291,7 +291,7 @@ describe('Repository.integration', () => {
     ]);
     expect(updatedEntities.entities).toHaveLength(2);
     expect(updatedEntities.hasErrors).toBeFalsy();
-    expect(updatedEntities.raw.items).toHaveLength(2);
+    expect(updatedEntities.raw.body.items).toHaveLength(2);
     expect(updatedEntities.entities[0].id).toHaveLength(21);
     expect(updatedEntities.entities[0].foo).toBe(111);
     expect(updatedEntities.entities[1].id).toHaveLength(21);
@@ -315,7 +315,7 @@ describe('Repository.integration', () => {
     ]);
     expect(savedEntities.entities).toHaveLength(2);
     expect(savedEntities.hasErrors).toBeFalsy();
-    expect(savedEntities.raw.items).toHaveLength(2);
+    expect(savedEntities.raw.body.items).toHaveLength(2);
     expect(savedEntities.entities[0].id).toHaveLength(21);
     expect(savedEntities.entities[0].foo).toBeUndefined();
     expect(savedEntities.entities[1].id).toHaveLength(21);
@@ -330,7 +330,7 @@ describe('Repository.integration', () => {
     const createdEntities = await repository.createMultiple(entities);
     const ids = createdEntities.entities.map((entity) => entity.id);
     const deletedRes = await repository.deleteMultiple(ids);
-    expect(deletedRes.raw.items).toHaveLength(2);
+    expect(deletedRes.raw.body.items).toHaveLength(2);
     expect(deletedRes.hasErrors).toBeFalsy();
 
     const verifyDeletion = await repository.find({
