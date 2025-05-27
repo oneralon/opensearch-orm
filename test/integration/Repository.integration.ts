@@ -238,6 +238,47 @@ describe('Repository.integration', () => {
     expect((res.raw.body as any).deleted).toBe(1);
   });
 
+  it('should update by query', async () => {
+    const entity = new TestingClass();
+    entity.foo = 5;
+    entity.bar = true;
+    entity.geoPoint = [14, 15];
+    entity.createdAt = new Date('2022-04-01T00:00:00.000Z');
+    entity.updatedAt = [
+      new Date('2022-04-01T00:00:00.000Z'),
+      new Date('2022-04-02T00:00:00.000Z'),
+    ];
+    const { entity: createdEntity } = await repository.create(entity);
+
+    const res = await repository.updateByQuery({
+      query: {
+        term: {
+          foo: 5,
+        },
+      },
+      script: {
+        lang: 'painless',
+        source: `
+            ctx._source.bar = params.bar;
+            ctx._source.foo = params.foo;
+          `,
+        params: {
+          bar: false,
+          foo: 4,
+        },
+      },
+    });
+
+    const { entity: updatedEntity } = await repository.findById(
+      createdEntity.id,
+    );
+
+    expect(res.updated).toBe(1);
+    expect((res.raw.body as any).updated).toBe(1);
+    expect(updatedEntity.foo).toEqual(4);
+    expect(updatedEntity.bar).toEqual(false);
+  });
+
   it('should create multiple entities', async () => {
     const entities = [
       Object.assign(new TestingClass(), { foo: 555 }),

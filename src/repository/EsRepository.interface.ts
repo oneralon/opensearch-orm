@@ -31,7 +31,8 @@ export type EsActionTypes =
   | 'createIndex'
   | 'deleteIndex'
   | 'updateMapping'
-  | 'deleteByQuery';
+  | 'deleteByQuery'
+  | 'updateByQuery';
 
 export type EsMiddlewareFunction = (
   action: EsActionTypes,

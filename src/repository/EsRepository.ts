@@ -24,8 +24,11 @@ import { TransportRequestOptions } from '@opensearch-project/opensearch/lib/Tran
 import {
   DeleteByQuery_Request,
   Search_Request,
+  UpdateByQuery_Request,
+  UpdateByQuery_RequestBody,
 } from '@opensearch-project/opensearch/api';
 import { BulkByScrollResponseBase } from '@opensearch-project/opensearch/api/_types/_common';
+import { Common } from '@opensearch-project/opensearch/api/_types';
 
 export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
   private readonly metaLoader = FactoryProvider.makeMetaLoader();
@@ -372,6 +375,25 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
       this.triggerBeforeRequest('updateMapping', esParams, [mapping]);
       await this.client.indices.putMapping(esParams);
+    } catch (e) {
+      handleEsException(e);
+    }
+  }
+
+  async updateByQuery(body: UpdateByQuery_RequestBody) {
+    try {
+      const esParams: UpdateByQuery_Request = Object.assign({
+        body,
+        index: this.metaLoader.getIndex(this.Entity, body),
+      });
+
+      this.triggerBeforeRequest('updateByQuery', esParams, [body]);
+      const res = await this.client.updateByQuery(esParams);
+
+      return {
+        updated: (res?.body as BulkByScrollResponseBase).updated,
+        raw: res,
+      };
     } catch (e) {
       handleEsException(e);
     }
