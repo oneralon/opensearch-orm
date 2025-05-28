@@ -384,6 +384,8 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
     try {
       const esParams: UpdateByQuery_Request = Object.assign({
         body,
+        refresh: this.metaLoader.getReflectMetaData(this.getEntity()).entity
+          .options.refresh,
         index: this.metaLoader.getIndex(this.Entity, body),
       });
 
