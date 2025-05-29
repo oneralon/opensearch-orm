@@ -18,6 +18,7 @@ export interface EsSearchParams<T, U = keyof T> {
 export type EsMiddlewareTypes = 'beforeRequest';
 
 export type EsActionTypes =
+  | 'count'
   | 'create'
   | 'createMultiple'
   | 'update'

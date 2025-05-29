@@ -363,6 +363,18 @@ describe('Repository.integration', () => {
     expect(savedEntities.entities[1].foo).toBeUndefined();
   });
 
+  it('should count entities', async () => {
+    const countRes = await repository.count({
+      query: {
+        term: {
+          bar: true,
+        },
+      },
+    });
+
+    expect(countRes.count).toEqual(1);
+  });
+
   it('should delete multiple entities', async () => {
     const entities = [
       Object.assign(new TestingClass(), { foo: 999 }),

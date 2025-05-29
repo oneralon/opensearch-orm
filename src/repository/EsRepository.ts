@@ -4,7 +4,7 @@ import {
   EsMiddlewareFunction,
   EsActionTypes,
 } from './EsRepository.interface';
-import { Client } from '@opensearch-project/opensearch';
+import { API, Client } from '@opensearch-project/opensearch';
 import { ClassType } from '../types/Class.type';
 import { FactoryProvider } from '../factory/Factory.provider';
 import { EsIndexInterface } from '../types/EsIndex.interface';
@@ -18,17 +18,18 @@ import {
   EsBulkResponseInterface,
   EsCollectionResponseInterface,
   EsDeleteBulkResponseInterface,
+  EsResponseCountInterface,
   EsResponseInterface,
 } from './EsBulkResponseInterface';
 import { TransportRequestOptions } from '@opensearch-project/opensearch/lib/Transport';
 import {
+  Count_Request,
   DeleteByQuery_Request,
   Search_Request,
   UpdateByQuery_Request,
   UpdateByQuery_RequestBody,
 } from '@opensearch-project/opensearch/api';
 import { BulkByScrollResponseBase } from '@opensearch-project/opensearch/api/_types/_common';
-import { Common } from '@opensearch-project/opensearch/api/_types';
 
 export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
   private readonly metaLoader = FactoryProvider.makeMetaLoader();
@@ -199,6 +200,31 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
             data: item?._source || {},
           });
         }),
+      };
+    } catch (e) {
+      handleEsException(e);
+    }
+  }
+
+  async count(
+    query: Pick<EsQuery<Entity>, 'query'>,
+    params: Partial<TransportRequestOptions> = {},
+  ): Promise<EsResponseCountInterface> {
+    try {
+      const esParams: Count_Request = Object.assign(
+        {
+          index: this.metaLoader.getIndex(this.Entity, query),
+          body: query,
+        },
+        params,
+      );
+
+      this.triggerBeforeRequest('count', esParams, [query]);
+      const res = await this.client.count(esParams);
+
+      return {
+        raw: res,
+        count: res.body.count,
       };
     } catch (e) {
       handleEsException(e);

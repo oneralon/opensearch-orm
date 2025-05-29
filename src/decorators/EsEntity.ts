@@ -26,7 +26,7 @@ export function EsEntity(
         number_of_shards: 1,
       },
       options: {
-        refresh: 'wait_for',
+        refresh: true,
       },
       mapping: {
         dynamic: 'strict',

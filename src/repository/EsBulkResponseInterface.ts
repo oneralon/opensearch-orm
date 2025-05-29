@@ -19,6 +19,11 @@ export interface EsResponseDeleteByQueryInterface {
   raw: any;
 }
 
+export interface EsResponseCountInterface {
+  count: number;
+  raw: any;
+}
+
 export interface EsCollectionResponseInterface<T> {
   entities: T[];
   raw: any;
