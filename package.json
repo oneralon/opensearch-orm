@@ -1,6 +1,6 @@
 {
   "name": "@oneralon/opensearch-orm",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "OpenSearch object relational mapper.",
   "scripts": {
     "build": "tsc --project ./tsconfig.json",
@@ -35,6 +35,7 @@
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^27.4.1",
     "@types/lorem-ipsum": "^2.0.0",
+    "@types/node": "^22.15.27",
     "@types/random": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "^5.16.0",
     "@typescript-eslint/parser": "^5.16.0",

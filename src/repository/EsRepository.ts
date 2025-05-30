@@ -4,7 +4,16 @@ import {
   EsMiddlewareFunction,
   EsActionTypes,
 } from './EsRepository.interface';
-import { API, Client } from '@opensearch-project/opensearch';
+import { Client } from '@opensearch-project/opensearch';
+import { TransportRequestOptions } from '@opensearch-project/opensearch/lib/Transport';
+import {
+  Count_Request,
+  DeleteByQuery_Request,
+  Search_Request,
+  UpdateByQuery_Request,
+  UpdateByQuery_RequestBody,
+} from '@opensearch-project/opensearch/api';
+import { BulkByScrollResponseBase } from '@opensearch-project/opensearch/api/_types/_common';
 import { ClassType } from '../types/Class.type';
 import { FactoryProvider } from '../factory/Factory.provider';
 import { EsIndexInterface } from '../types/EsIndex.interface';
@@ -21,15 +30,7 @@ import {
   EsResponseCountInterface,
   EsResponseInterface,
 } from './EsBulkResponseInterface';
-import { TransportRequestOptions } from '@opensearch-project/opensearch/lib/Transport';
-import {
-  Count_Request,
-  DeleteByQuery_Request,
-  Search_Request,
-  UpdateByQuery_Request,
-  UpdateByQuery_RequestBody,
-} from '@opensearch-project/opensearch/api';
-import { BulkByScrollResponseBase } from '@opensearch-project/opensearch/api/_types/_common';
+import { EsFindCursor } from './EsCursors';
 
 export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
   private readonly metaLoader = FactoryProvider.makeMetaLoader();
@@ -204,6 +205,13 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
     } catch (e) {
       handleEsException(e);
     }
+  }
+
+  findCursor(
+    query: ConstructorParameters<typeof EsFindCursor<Entity>>[0],
+    params: Partial<Search_Request> = {},
+  ): EsFindCursor<Entity> {
+    return new EsFindCursor(query, params, this);
   }
 
   async count(

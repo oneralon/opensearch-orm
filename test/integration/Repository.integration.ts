@@ -297,6 +297,29 @@ describe('Repository.integration', () => {
     expect(createdEntities.entities[2].foo).toBe(557);
   });
 
+  it('should find with cursor', async () => {
+    const entities = Array.from(new Array(1000).keys()).map((i) => {
+      return Object.assign(new TestingClass(), { foo: i + 1000 });
+    });
+
+    const { entities: created } = await repository.createMultiple(entities);
+
+    const cursor = repository.findCursor({
+      query: { range: { foo: { gte: 999 } } },
+      sort: [{ foo: { order: 'asc' } }],
+    });
+
+    const response = await new Promise((resolve, reject) => {
+      const result: Array<TestingClass> = [];
+
+      cursor.on('data', (data) => result.push(data));
+      cursor.on('error', reject);
+      cursor.on('end', () => resolve(result));
+    });
+
+    expect(response).toEqual(created);
+  });
+
   it('should not create multiple entities with no data provided', async () => {
     let error;
     try {
