@@ -4,13 +4,13 @@ import { EsQuery } from '../query/query';
 import { EsSortTypes } from '../query/sort';
 import { EsRepositoryInterface } from './EsRepository.interface';
 
-export class EsFindCursor<T, R = T> extends Readable {
+export class EsFindCursor<T> extends Readable {
   private searchAfter: Array<unknown>;
 
   constructor(
     private readonly query: EsQuery<T> & { sort: EsSortTypes<T> },
     private readonly repository: EsRepositoryInterface<T>,
-    private readonly populate?: (items: Array<T>) => Promise<Array<R>>,
+    private readonly populate?: (items: Array<T>) => Promise<Array<unknown>>,
     private readonly params: Partial<Search_Request> = {},
   ) {
     super({

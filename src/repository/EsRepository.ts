@@ -209,7 +209,7 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
   findCursor(
     query: ConstructorParameters<typeof EsFindCursor<Entity>>[0],
-    populate: ConstructorParameters<typeof EsFindCursor<Entity>>[2],
+    populate?: ConstructorParameters<typeof EsFindCursor<Entity>>[2],
     params: ConstructorParameters<typeof EsFindCursor<Entity>>[3] = {},
   ): EsFindCursor<Entity> {
     return new EsFindCursor(query, this, populate, params);
