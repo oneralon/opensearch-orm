@@ -1,6 +1,6 @@
 {
   "name": "@oneralon/opensearch-orm",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "OpenSearch object relational mapper.",
   "scripts": {
     "build": "tsc --project ./tsconfig.json",

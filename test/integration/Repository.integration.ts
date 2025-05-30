@@ -8,6 +8,7 @@ import { EsEntityNotFoundException } from '../../src/exceptions/EsEntityNotFound
 import * as bodybuilder from 'bodybuilder';
 import { Client } from '@opensearch-project/opensearch';
 import { OpenSearchClientError } from '@opensearch-project/opensearch/lib/errors.js';
+import { setTimeout } from 'timers/promises';
 
 config({ path: path.join(__dirname, '..', '.env') });
 
@@ -304,10 +305,17 @@ describe('Repository.integration', () => {
 
     const { entities: created } = await repository.createMultiple(entities);
 
-    const cursor = repository.findCursor({
-      query: { range: { foo: { gte: 999 } } },
-      sort: [{ foo: { order: 'asc' } }],
-    });
+    const cursor = repository.findCursor(
+      {
+        query: { range: { foo: { gte: 999 } } },
+        sort: [{ foo: { order: 'asc' } }],
+      },
+      async (items: Array<TestingClass>) => {
+        await setTimeout(10);
+
+        return items;
+      },
+    );
 
     const response = await new Promise((resolve, reject) => {
       const result: Array<TestingClass> = [];

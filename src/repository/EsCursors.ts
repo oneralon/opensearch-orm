@@ -4,13 +4,14 @@ import { EsQuery } from '../query/query';
 import { EsSortTypes } from '../query/sort';
 import { EsRepositoryInterface } from './EsRepository.interface';
 
-export class EsFindCursor<T> extends Readable {
+export class EsFindCursor<T, R = T> extends Readable {
   private searchAfter: Array<unknown>;
 
   constructor(
     private readonly query: EsQuery<T> & { sort: EsSortTypes<T> },
-    private readonly params: Partial<Search_Request> = {},
     private readonly repository: EsRepositoryInterface<T>,
+    private readonly populate?: (items: Array<T>) => Promise<Array<R>>,
+    private readonly params: Partial<Search_Request> = {},
   ) {
     super({
       autoDestroy: true,
@@ -29,7 +30,13 @@ export class EsFindCursor<T> extends Readable {
               );
 
               if (entities.length) {
-                entities.forEach((entity) => this.push(entity));
+                if (this.populate) {
+                  const populated = await this.populate(entities);
+
+                  populated.forEach((entity) => this.push(entity));
+                } else {
+                  entities.forEach((entity) => this.push(entity));
+                }
 
                 this.searchAfter = raw.body.hits.hits.at(-1).sort;
               } else {

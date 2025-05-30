@@ -31,6 +31,7 @@ export * from './src/query/termQueries';
 export * from './src/repository/EsBulkResponseInterface';
 export * from './src/repository/EsRepository.interface';
 export * from './src/repository/EsRepository';
+export * from './src/repository/EsCursors';
 
 export * from './src/types/Class.type';
 export * from './src/types/Es.type';

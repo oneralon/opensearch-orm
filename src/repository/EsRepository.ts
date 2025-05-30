@@ -209,9 +209,10 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
 
   findCursor(
     query: ConstructorParameters<typeof EsFindCursor<Entity>>[0],
-    params: Partial<Search_Request> = {},
+    populate: ConstructorParameters<typeof EsFindCursor<Entity>>[2],
+    params: ConstructorParameters<typeof EsFindCursor<Entity>>[3] = {},
   ): EsFindCursor<Entity> {
-    return new EsFindCursor(query, params, this);
+    return new EsFindCursor(query, this, populate, params);
   }
 
   async count(
