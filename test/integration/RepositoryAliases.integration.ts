@@ -19,6 +19,7 @@ describe('RepositoryAliases', () => {
       TestingClassWithIndexFn,
       new Client({
         nodes: [process.env.ELASTIC_HOST!],
+        ssl: { rejectUnauthorized: false },
         auth: {
           username: process.env.ELASTIC_USERNAME!,
           password: process.env.ELASTIC_PASSWORD!,
@@ -26,14 +27,8 @@ describe('RepositoryAliases', () => {
       }),
     );
 
-    try {
-      const schema = FactoryProvider.makeSchemaManager().generateIndexSchema(
-        TestingClassWithIndexFn,
-      );
-      await repository.createIndex(schema);
-    } catch (e) {
-      console.warn(e.message);
-    }
+    const schema = FactoryProvider.makeSchemaManager().generateIndexSchema(TestingClassWithIndexFn);
+    await repository.createIndex(schema);
   });
 
   afterAll(async () => {

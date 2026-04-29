@@ -19,28 +19,22 @@ describe('RepositoryNested', () => {
       TestingNestedClass,
       new Client({
         nodes: [process.env.ELASTIC_HOST!],
+        ssl: { rejectUnauthorized: false },
         auth: {
           username: process.env.ELASTIC_USERNAME!,
           password: process.env.ELASTIC_PASSWORD!,
         },
       }),
     );
-
-    try {
-      const schema =
-        FactoryProvider.makeSchemaManager().generateIndexSchema(
-          TestingNestedClass,
-        );
-      await repository.createIndex(schema);
-      const mapping = FactoryProvider.makeSchemaManager().buildMapping(
-        FactoryProvider.makeMetaLoader().getReflectMetaData(
-          TestingNestedClass,
-        )!,
+    const schema =
+      FactoryProvider.makeSchemaManager().generateIndexSchema(
+        TestingNestedClass,
       );
-      await repository.updateMapping(mapping);
-    } catch (e) {
-      console.warn(e.message);
-    }
+    await repository.createIndex(schema);
+    const mapping = FactoryProvider
+      .makeSchemaManager()
+      .buildMapping(FactoryProvider.makeMetaLoader().getReflectMetaData(TestingNestedClass)!);
+    await repository.updateMapping(mapping);
   });
 
   afterAll(async () => {

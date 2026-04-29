@@ -365,7 +365,7 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
     try {
       const index = this.metaLoader.getIndex(this.Entity);
 
-      const alias = await this.client.indices.getAlias({ name: index });
+      const alias = await this.client.indices.existsAlias({ name: index });
 
       if (alias.statusCode === 404) {
         const esParams = {

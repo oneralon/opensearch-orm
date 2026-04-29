@@ -21,6 +21,7 @@ describe('Repository.integration', () => {
       TestingClass,
       new Client({
         nodes: [process.env.ELASTIC_HOST!],
+        ssl: { rejectUnauthorized: false },
         auth: {
           username: process.env.ELASTIC_USERNAME!,
           password: process.env.ELASTIC_PASSWORD!,
@@ -34,13 +35,8 @@ describe('Repository.integration', () => {
       }
     });
 
-    try {
-      const schema =
-        FactoryProvider.makeSchemaManager().generateIndexSchema(TestingClass);
-      await repository.createIndex(schema);
-    } catch (e) {
-      console.warn(e.message);
-    }
+    const schema = FactoryProvider.makeSchemaManager().generateIndexSchema(TestingClass);
+    await repository.createIndex(schema);
   });
 
   afterAll(async () => {

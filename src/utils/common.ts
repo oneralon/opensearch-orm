@@ -1,3 +1,4 @@
+import { ResponseError } from '@opensearch-project/opensearch/lib/errors';
 import { ClassType } from '../types/Class.type';
 import { EsException } from '../exceptions/EsException';
 
@@ -7,6 +8,11 @@ export function makeEsException(
 ): EsException {
   if (error instanceof EsException) {
     return error;
+  }
+  if (error instanceof ResponseError) {
+    const exception = new exceptionType(error.meta.body);
+    exception.originalError = error;
+    return exception;
   }
   const exception = new exceptionType(error.message);
   exception.originalError = error;

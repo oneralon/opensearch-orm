@@ -1,11 +1,10 @@
 {
   "name": "@oneralon/opensearch-orm",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "OpenSearch object relational mapper.",
   "scripts": {
     "build": "tsc --project ./tsconfig.json",
-    "test": "jest --forceExit --detectOpenHandles \"\\.spec\\.ts\"",
-    "test:full": "jest \"\\.(integration|spec|performance)\\.ts\"",
+    "test": "NODE_TLS_REJECT_UNAUTHORIZED=0 jest \"\\.(integration)\\.ts\"",
     "test:cov": "jest --collectCoverage \"\\.(integration|spec|performance)\\.ts\""
   },
   "main": "dist/index.js",
@@ -31,7 +30,7 @@
   },
   "homepage": "https://github.com/oneralon/opensearch-orm#readme",
   "devDependencies": {
-    "@opensearch-project/opensearch": "^3.5.1",
+    "@opensearch-project/opensearch": "^3.6.0",
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^27.4.1",
     "@types/lorem-ipsum": "^2.0.0",

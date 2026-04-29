@@ -2,14 +2,15 @@ services:
   opensearch:
     image: opensearchproject/opensearch:latest
     environment:
+      - cluster.name=opensearch-cluster
       - node.name=node
-      - cluster.initial_cluster_manager_nodes=node
+      - discovery.type=single-node
       - bootstrap.memory_lock=true
       - 'OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m'
-      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=$#j*52ocz9kP*d2ciS$jZvgo!&5ybJA39X2wpsvPOM^2WjJr
-      - DISABLE_SECURITY_PLUGIN=true
-      - plugins.security.ssl.http.enabled=false
-      - 'DISABLE_INSTALL_DEMO_CONFIG=true'
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=i&V5xw43htDDN8M%
+      - DISABLE_INSTALL_DEMO_CONFIG=false
+      - plugins.security.ssl.http.enabled=true
+      - plugins.security.ssl.transport.enabled=true
     ulimits:
       memlock:
         soft: -1
