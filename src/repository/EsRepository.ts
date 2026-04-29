@@ -363,15 +363,21 @@ export class EsRepository<Entity> implements EsRepositoryInterface<Entity> {
     params: Partial<TransportRequestOptions> = {},
   ): Promise<void> {
     try {
-      const esParams = {
-        index: this.metaLoader.getIndex(this.Entity),
-        body: indexInterface,
-        ...params,
-      };
+      const index = this.metaLoader.getIndex(this.Entity);
 
-      this.triggerBeforeRequest('createIndex', esParams, [indexInterface]);
+      const alias = await this.client.indices.getAlias({ name: index });
 
-      await this.client.indices.create(esParams);
+      if (alias.statusCode === 404) {
+        const esParams = {
+          index: this.metaLoader.getIndex(this.Entity),
+          body: indexInterface,
+          ...params,
+        };
+
+        this.triggerBeforeRequest('createIndex', esParams, [indexInterface]);
+
+        await this.client.indices.create(esParams);
+      }
     } catch (e) {
       handleEsException(e);
     }
