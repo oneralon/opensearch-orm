@@ -1,6 +1,13 @@
-import { ResponseError } from '@opensearch-project/opensearch/lib/errors';
 import { ClassType } from '../types/Class.type';
 import { EsException } from '../exceptions/EsException';
+
+interface ResponseError extends Error {
+  meta?: { body?: string };
+}
+
+function isResponseError(error: Error | ResponseError): error is ResponseError {
+  return typeof (error as ResponseError).meta?.body === 'string';
+}
 
 export function makeEsException(
   error: Error,
@@ -9,7 +16,7 @@ export function makeEsException(
   if (error instanceof EsException) {
     return error;
   }
-  if (error instanceof ResponseError) {
+  if (isResponseError(error)) {
     const exception = new exceptionType(error.meta.body);
     exception.originalError = error;
     return exception;
